@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Loans</title>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.css"
+            rel="stylesheet">
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+        <link
+            href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <link href="style.css" rel="stylesheet">
+
+    </head>
+    <body >
+       
+        <!-- //////////////////// Loans /////////////////// -->
+        <div class="jumbotron" style="padding-top:5px;">   
+            <form id="loanform" onsubmit="event.preventDefault();">
+                <h1>Loans</h1>
+                <label>Customer</label>
+                <div id="customers_div" style="display: inline;"></div>
+                <label>Book</label>
+                <div id="books_div" style="display: inline;"></div>
+                <button class="btn btn-primary" onclick="loan_book()">Loan</button>
+                <br><br>
+                <div id="filterLoans_div">
+                    <select id='filterLoans_select' onchange="buildDisplayLoans(this.value)">
+                        <option value='All'>All</option>
+                        <option value='ActiveLoans'>Active Loans</option>
+                        <option value='LoanHistory'>Loan History</option>
+                    </select>
+                </div>
+                <br>
+                <div id="loanDisplay">
+                    <table id="listTable" class="table">
+                        <thead class="table-primary">
+                          <tr>
+                            <th scope="col">Customer Name</th>
+                            <th scope="col">Book Name</th>
+                            <th scope="col">Loan Date</th>
+                            <th scope="col">Return Date</th>
+                            <th scope="col"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tableBody"> 
+                        </tbody>
+                      </table>
+                </div>
+            </form>
+        </div>
+
+        <!-- //////////////////// Logic /////////////////// -->
+        <script>
+        const MY_SERVER_AVAILABLE_BOOKS = "https://sifria.onrender.com/books/availablebooks"
+        const MY_SERVER_CUSTS = "https://sifria.onrender.com/customers"
+        const MY_SERVER_LOANS = "https://sifria.onrender.com/loans"
+
+
+        let loans = []
+        let customers = []
+        let books = []
+
+        ///Load and Display all  loans in the table
+        const buildDisplayLoans = (filterVal="All") => {
+            if(filterVal=="All"){//show all loans when choosing all in filter
+                tableBody.innerHTML=loans.data.map(c =>
+                `
+                <td>${c.custname}</td>
+                <td>${c.bookname}</td>
+                <td>${c.loandate}</td>
+                <td>${c.returndate=='None'?'':c.returndate}</td>
+                <td>${c.returndate=='None'?'<button onClick="return_book('+c.bookId+')">return book</button>':'' }</td>
+                </tr>`).join("")
+
+            }
+            else if(filterVal=="ActiveLoans"){//show only active loans when choosing all in filter
+                tableBody.innerHTML=loans.data.filter(x => x.returndate=='None').map(c =>
+                `
+                <td>${c.custname}</td>
+                <td>${c.bookname}</td>
+                <td>${c.loandate}</td>
+                <td>${c.returndate=='None'?'':c.returndate}</td>
+                <td>${c.returndate=='None'?'<button onClick="return_book('+c.bookId+')">return book</button>':'' }</td>
+                </tr>`).join("")
+
+            }
+            else if(filterVal=="LoanHistory"){//show only history loans when choosing all in filter
+                tableBody.innerHTML=loans.data.filter(x => x.returndate!='None').map(c =>
+                `
+                <td>${c.custname}</td>
+                <td>${c.bookname}</td>
+                <td>${c.loandate}</td>
+                <td>${c.returndate=='None'?'':c.returndate}</td>
+                <td>${c.returndate=='None'?'<button onClick="return_book('+c.bookId+')">return book</button>':'' }</td>
+                </tr>`).join("")
+
+            }
+        } 
+        ///Load and Display all books  in the dropdownlist
+        const buildDisplay_books_select = () => {
+            if(books.data.length==0){
+                alert("there are no available books to loan!")
+            }
+            books_div.innerHTML = "<select id='books_select' class='selectpicker' data-live-search='true'>" + books.data.map(c => `<option value=${c.id}><b>${c.name} </b>by ${c.author} ${c.yearPublished}</option>`).join('') + '</select>'
+        }
+       ///Load and Display all customers  in the dropdownlist
+        const buildDisplay_customers_select = () => {
+            customers_div.innerHTML = "<select id='customers_select'>" + customers.data.map(c => `<option value=${c.id}>${c.name} ,${c.city},${c.age}</option>`).join('') + '</select>'
+        }
+        
+        
+       
+        //////////////////// CRUD categories /////////////////// 
+        //////////////////// main Load data to display all data of page /////////////////// 
+        // Read
+        const loadData = async () => {
+            books = await axios.get(MY_SERVER_AVAILABLE_BOOKS)    
+            customers = await axios.get(MY_SERVER_CUSTS) 
+            loans = await axios.get(MY_SERVER_LOANS) 
+            buildDisplay_books_select()
+            buildDisplay_customers_select()
+            buildDisplayLoans()
+        }
+        loadData()
+
+         
+        //////////////////// Loans /////////////////// 
+        //  loan a book-add loan
+        const loan_book = async() => {  
+            let loan ={ custId:customers_select.value,bookId:books_select.value }
+            console.log(loan)
+            let loanbook=await axios.post(MY_SERVER_LOANS+"/", loan)
+            loadData()
+        }
+      
+        //return book-update loan
+        const return_book = async(id) => { 
+            let upd_loan=await axios.put(MY_SERVER_LOANS + "/" + id)
+            loadData()
+        }
+    </script>
+    </body>
+
+</html>

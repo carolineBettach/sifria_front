@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1,
+            shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Sifria</title>
+
+        <link rel="canonical"
+            href="https://getbootstrap.com/docs/4.1/examples/navbars/">
+
+        <!-- Bootstrap core CSS -->
+        <link
+            href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="style.css" rel="stylesheet">
+        <script>     
+        function changeSrc(linkSrc=""){
+            if(linkSrc==""){
+                if(sessionStorage.getItem("pageSrc")==null)
+                {
+                    sessionStorage.setItem("pageSrc","customer.html" );
+                }
+                mainFrame.src= sessionStorage.getItem("pageSrc");
+            }
+            else{
+                mainFrame.src=linkSrc
+                sessionStorage.setItem("pageSrc",linkSrc );
+
+            }
+            
+           
+        }
+      
+    </script>
+    
+    </head>
+
+    <body onload="changeSrc()">
+        <!-- //////////////////// Main Page-Nav Bar /////////////////// -->
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarsExample04" aria-controls="navbarsExample04"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExample04">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link " id="dropdownCust"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false" onclick="changeSrc('customer.html')" >Customers </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link " id="dropdownBook"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false" onclick="changeSrc('book.html')">Books</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="dropdownLoan"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">Loans</a>
+                        <div class="dropdown-menu"
+                            aria-labelledby="dropdownLoan">
+                            <a class="dropdown-item"
+                                onclick="changeSrc('loan.html')">All
+                                Loans</a>
+                            <a class="dropdown-item" onclick="changeSrc('lateloans.html')" >Late Loans</a>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </nav>
+        <!-- //////////////////// Main Page-IFRAME /////////////////// -->
+        <iframe id="mainFrame" src="" width="100%" height="100%"
+            frameBorder="0"></iframe>
+
+        <!-- Bootstrap core JavaScript
+    ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+        <script>window.jQuery || document.write('<script src="https://getbootstrap.com/docs/4.1/assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+        <script
+            src="https://getbootstrap.com/docs/4.1/assets/js/vendor/popper.min.js"></script>
+        <script
+            src="https://getbootstrap.com/docs/4.1/dist/js/bootstrap.min.js"></script>
+    </body>
+</html>

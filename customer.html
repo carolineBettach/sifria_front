@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <link
+            href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+</head>
+<body >
+   
+<!-- //////////////////// Customers /////////////////// -->
+
+<div class="jumbotron" style="padding-top:5px;">
+ <form id="customerform" onsubmit="event.preventDefault();">
+    <h1>Customers</h1>
+    <label>Name</label><input id="cust_name" type="text"   required>
+    <label>City</label><input id="cust_city" type="text"   required>
+    <label>Age</label><input id="cust_age" type="number"   required>
+    <button class="btn btn-primary" onclick="add_cust()">Add</button>
+    <br><br>
+</form>
+    <div> <label>Search by name</label> <input id="search_name" onkeyup="buildDisplayCusts()"></div>
+    <div id="custsDisplay">
+        <table id="listTable" class="table">
+            <thead class="table-primary">
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">City</th>
+                <th scope="col">Age</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"> 
+            </tbody>
+          </table>
+    </div>
+    
+</div>
+
+    <!-- //////////////////// Logic /////////////////// -->
+    <script>
+      
+    
+        const MY_SERVER_CUSTS = "https://sifria.onrender.com/customers"
+        let custs = []
+
+        ///Load and Display all customers in the table
+        const buildDisplayCusts = () => {
+            tableBody.innerHTML=custs.data.filter(x => x.name.toLowerCase().includes(search_name.value)).map(c => ` <tr>
+                <td><label>${c.name}</label><input id="cust_name1" value='${c.name}' style="display: none;" type="text"  ></input></td>
+                <td><label>${c.city}</label><input id="cust_city1" value='${c.city}' style="display: none;" type="text"  ></input></td>
+                <td><label>${c.age}</label><input id="cust_age1" value='${c.age}' style="display: none;" type="number"  ></input></td>
+                <td><button class="btn btn-danger" onClick="del_cust('${c.id}')">Delete</button> <button id='updBtn' class="btn btn-primary" onClick="editbtn(this,'${c.id}')">update</button>&nbsp;<button id='cancelbtn'  style="display: none;"  class="btn btn-primary" onClick="cancelFunc(this)">cancel</button></td>
+            </tr>`).join("")
+//                <td><button class="btn btn-danger" onClick="del_cust('${c.id}')">Delete</button> <button  class="btn btn-primary" onClick="upd_cust('${c.id}')">update</button></td>
+
+       }
+       const cancelFunc = async(b) => {
+            tr=$(b).closest('tr')
+            tr.find('#updBtn').text("update");
+            tr.find('#cancelbtn').hide();
+            $.each(tr.find('label'),function () {
+                $(this).show();
+            });
+            $.each(tr.find('input'),function () {
+                $(this).hide();
+            });
+       }
+       const editbtn = async(b,id) => {
+        //alert("edit");
+        tr=$(b).closest('tr')
+        if ($(b).text() =="update") {
+            tr=$(b).closest('tr')
+            tr.find('#updBtn').text("save");
+            tr.find('#cancelbtn').show();
+            $.each(tr.find('label'),function () {
+                $(this).hide();
+            });
+            $.each(tr.find('input'),function () {
+                $(this).show();
+            });
+        }
+        else {//save
+           var inputs= tr.find('input');
+           let x=await upd_cust(id,inputs[0].value,inputs[1].value,inputs[2].value)  
+           if(x) {
+            cancelFunc(b);
+            loadData()  
+           }
+                            
+    }
+      }
+        //////////////////// main Load data to display all data of page /////////////////// 
+        // Read
+        const loadData = async () => {
+            custs = await axios.get(MY_SERVER_CUSTS)     
+            buildDisplayCusts()
+        }
+        loadData()
+
+        
+        //////////////////// Customers /////////////////// 
+        // Create - customer
+        const add_cust = async() => {
+            if(cust_name.value==""){
+                alert("Please enter customer name")
+                return 
+            }
+            if(cust_city.value==""){
+                alert("Please enter city")
+                return 
+            }
+            if(cust_age.value==""){
+                alert("Please enter age")
+                return 
+            }
+            if(isNaN(cust_age.value)){
+                alert("Please enter number in age ")
+                return 
+            }
+            let cust ={ name: cust_name.value,city:cust_city.value,age:cust_age.value  }
+            console.log(cust)
+            let addcust=await axios.post(MY_SERVER_CUSTS+"/", cust)
+            loadData()
+        }
+        //delete customer
+        const del_cust = async(id) => {
+            let delcust=await axios.delete(MY_SERVER_CUSTS + "/" + id)
+                        .then(response => {
+                                    // Handle response
+                                    alert(response.data) 
+                                    loadData()
+                                })
+                                .catch(err => {
+                                    // Handle errors
+                                    console.error(err);
+                                });
+           
+        }
+        //update customer
+        const upd_cust =async (id,name,city,age) => {
+            if(name==""){
+                alert("Please enter customer name")
+                return false
+            }
+            if(city==""){
+                alert("Please enter city")
+                return false
+            }
+            if(age==""){
+                alert("Please enter age")
+                return false
+            }
+            if(isNaN(age)){
+                alert("Please enter number in age ")
+                return false
+            }
+            let updcust=await axios.put(MY_SERVER_CUSTS + "/" + id,{ name: name,city:city,age:age   })
+            return true
+            //loadData()
+          
+        }
+        // const upd_cust =async (id) => {
+        //     if(cust_name.value=="")
+        //         alert("Please enter customer name")
+        //         return
+        //     if(cust_city.value=="")
+        //         alert("Please enter city")
+        //         return
+        //     if(cust_age.value=="")
+        //         alert("Please enter age")
+        //         return
+        //     if(isNaN(cust_age.value)){
+        //         alert("Please enter number in age ")
+        //         return
+        //     }
+        //         let updcust=await axios.put(MY_SERVER_CUSTS + "/" + id,{ name: cust_name.value,city:cust_city.value,age:cust_age.value   })
+        //         loadData()
+          
+        // }
+    </script>
+</body>
+
+</html>

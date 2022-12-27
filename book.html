@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Books</title>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.css"
+            rel="stylesheet">
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+       
+        <link
+            href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <link href="style.css" rel="stylesheet">
+    </head>
+
+    <body>
+
+        <div class="jumbotron" style="padding-top:5px;">
+            <!-- //////////////////// Books /////////////////// -->
+            <form id="bookform" onsubmit="event.preventDefault();">
+                <h1>Books</h1>
+                <label>Book name</label><input id="book_name" type="text"   required>
+                <label>Book author</label><input id="book_author" type="text"
+                    required>
+                <label>Year published</label> <input id="book_year"
+                    type="number" required class="datepicker" />
+                <label>Book type</label>
+                <div id="select_booktype" style="display: inline;"></div>
+                <button class="btn btn-primary" onclick="add_book()">Add</button>
+                <br><br>
+                <div><label> Search by book name</label><input id="search_name"
+                        onkeyup="buildDisplayBook()"></div>
+                        
+                <div id="bookDisplay">
+                    <table class="table">
+                        <thead class="table-primary">
+                          <tr> 
+                            <th scope="col">Book name</th>
+                            <th scope="col">Book author</th>
+                            <th scope="col">Year published</th>
+                            <th scope="col">Book type</th>
+                            <th scope="col"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="tableBody"> 
+                        </tbody>
+                      </table>
+                </div>
+            </form>
+        </div>
+
+        <!-- //////////////////// Logic of Books /////////////////// -->
+        <script>
+        const MY_SERVER_BOOK = "https://sifria.onrender.com/books"
+        const MY_SERVER_BOOKTYPE = "https://sifria.onrender.com/booktypes"
+
+        let books = []
+        let booktypes = []
+        let booktype = []
+
+       ///Add year picker for yearpublished textbox
+        $('body').on('focus',".datepicker", function(){
+            if( $(this).hasClass('hasDatepicker') === false )  {
+                $(this).datepicker({
+                    minViewMode: 2,
+                    format: 'yyyy',
+                    endDate: new Date()
+                });
+            }
+        });
+        
+        ///Load and Display all books in the table
+        const buildDisplayBook = () => {
+            tableBody.innerHTML=books.data.filter(x => x.name.toLowerCase().includes(search_name.value)).map(c => ` <tr>
+                <td>${c.name}</td>
+                <td>${c.author}</td>
+                <td>${c.yearPublished}</td>
+                <td>${c.booktypeName}</td>
+                <td><button class="btn btn-danger" onClick="del_book('${c.id}')">Delete</button> <button class="btn btn-primary" onClick="upd_book('${c.id}')">update</button></td>
+            </tr>`).join("")
+               
+        } 
+        
+        ///Load and Display all bookstype in the dropdownlist
+        const buildDisplay_booktype_select = () => {
+            select_booktype.innerHTML = "<select id='booktype_id'>" + booktypes.data.map(c => `<option value=${c.id}>${c.description}</option>`).join('') + '</select>'
+        }
+       
+       
+        //////////////////// main Load data to display all data of page /////////////////// 
+        // Read
+        const loadData = async () => {
+            books = await axios.get(MY_SERVER_BOOK)    
+            booktypes = await axios.get(MY_SERVER_BOOKTYPE) 
+            buildDisplayBook()
+            buildDisplay_booktype_select()
+        }
+        loadData()
+
+        
+        //////////////////// Books /////////////////// 
+        // Create - book
+        const add_book = async() => {  
+            if(book_name.value==""){
+                alert("Please enter  book name")
+                return
+            }
+            if(book_author.value==""){
+                alert("Please enter  book author")
+                return
+            }
+            if(book_year.value==""){
+                alert("Please enter book year")
+                return
+            }
+            if(booktype_id.value==""){
+                alert("Please choose book type ")
+                return
+            }
+            if(isNaN(book_year.value)& (book_year.value.length)!=4){
+                alert("Please enter number with 4 digits in book year ")
+                return
+            }
+            let book ={ name: book_name.value,author:book_author.value,yearPublished:book_year.value ,booktypeId:booktype_id.value }
+            console.log(book)
+            let addbook=await axios.post(MY_SERVER_BOOK+"/", book)
+            loadData()
+        }
+        //delete book
+        const del_book = async(id) => {
+            let delbook=await axios.delete(MY_SERVER_BOOK + "/" + id)
+                        .then(response => {
+                                    // Handle response
+                                    alert(response.data) 
+                                    loadData()
+                                })
+                                .catch(err => {
+                                    // Handle errors
+                                    console.error(err);
+                                });
+           
+        }
+        //update book
+        const upd_book = async(id) => { 
+            if(book_name.value==""){
+                alert("Please enter  book name")
+                return
+            }
+            if(book_author.value==""){
+                alert("Please enter  book author")
+                return
+            }
+            if(book_year.value==""){
+                alert("Please enter book year")
+                return
+            }
+            if(booktype_id.value==""){
+                alert("Please choose book type ")
+                return
+            }
+            if(isNaN(book_year.value)& (book_year.value.length)!=4){
+                alert("Please enter number with 4 digits in book year ")
+                return
+            }
+            console.log(booktype_id.value)
+            let updbook=await axios.put(MY_SERVER_BOOK + "/" + id,{ name: book_name.value,author:book_author.value,yearPublished:book_year.value ,booktypeId:booktype_id.value  })
+            loadData()
+        }
+    </script>
+    </body>
+
+</html>

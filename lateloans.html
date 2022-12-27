@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Late Loans</title>
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.css"
+            rel="stylesheet">
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+        <!-- CSS only -->
+        <link
+        href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+
+        <!-- ////////////////////Late Loans /////////////////// -->
+       
+        <div class="jumbotron" style="padding-top:5px;">   
+            <h1>Late Loans</h1>
+            <div id="lateLoanDisplay">
+                <table id="listTable" class="table">
+                    <thead class="table-primary">
+                      <tr>
+                        <th scope="col">Customer Name</th>
+                        <th scope="col">Book Name</th>
+                        <th scope="col">Loan Date</th>
+                        <th scope="col">Days Late</th>
+                        <th scope="col"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="tableBody"> 
+                    </tbody>
+                  </table>
+            </div>
+        </div>
+
+        <!-- //////////////////// Logic of late loans /////////////////// -->
+        <script>     
+        const MY_SERVER_LateLOANS = "https://sifria.onrender.com/loans/lateloans"
+        let lateLoans = []
+
+        ///Load and Display all late loans in the table
+        const buildDisplayLateLoans = () => {
+            tableBody.innerHTML= lateLoans.data.map(c =>
+                `
+                <td>${c.custname}</td>
+                <td>${c.bookname}</td>
+                <td>${c.loandate}</td>
+                <td>${c.dayslate}</td>
+                </tr>`).join("")
+
+                   } 
+          
+        //////////////////// CRUD categories /////////////////// 
+        //////////////////// main Load data to display all data of page /////////////////// 
+        // Read
+        const loadData = async () => {
+            lateLoans = await axios.get(MY_SERVER_LateLOANS) 
+            buildDisplayLateLoans()
+        }
+        loadData() 
+        
+    </script>
+    </body>
+
+</html>
